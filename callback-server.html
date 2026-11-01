@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OAuth Callback Handler</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; background: #f9f9f9; text-align: center; }
+    .card { max-width: 500px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    .code-box { background: #f4f4f4; padding: 15px; border-radius: 4px; word-break: break-all; font-family: monospace; margin: 15px 0; font-size: 14px; text-align: left; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #0056b3; }
+    .error { color: #dc3545; }
+    .success { color: #28a745; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>OAuth 2.0 Authorization Callback</h2>
+    <div id="content">Processing authorization response...</div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+
+    const contentDiv = document.getElementById('content');
+
+    if (error) {
+      contentDiv.innerHTML = `<h3 class="error">Authorization Failed</h3><p>Error: ${escapeHtml(error)}</p>`;
+    } else if (code) {
+      contentDiv.innerHTML = `
+        <h3 class="success">Authorization Successful!</h3>
+        <p>Your Authorization Code:</p>
+        <div class="code-box" id="authCode">${escapeHtml(code)}</div>
+        <button onclick="copyCode()">Copy Code</button>
+        ${state ? `<p><small>State: ${escapeHtml(state)}</small></p>` : ''}
+      `;
+    } else {
+      contentDiv.innerHTML = `<h3 class="error">No Authorization Code Found</h3><p>The URL did not contain a code parameter.</p>`;
+    }
+
+    function copyCode() {
+      const codeText = document.getElementById('authCode').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        alert('Authorization code copied to clipboard!');
+      }).catch(err => {
+        alert('Failed to copy: ' + err);
+      });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
